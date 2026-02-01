@@ -1,0 +1,100 @@
+How to install nifi using docker compose
+
+
+1. prerequisite
+  - docker desktop is in running state
+  - internet connection
+  
+2. Understanding the Architecture
+	Our setup:
+	- https and http port for nifi web GUI
+	- set default port nifi to https
+	- user and password for nifi web GUI in https
+
+3. step by step to setup nifi on docker compose
+
+step1: Project setup
+	- create a directory structure for our Kafka cluster
+		# mkdir nifi-docker
+	
+steps2: Creating the Docker Compose Configuration
+	- Create a file named docker-compose.yml in your project directory
+		file contens is like below:
+		networks:
+		  kafka-net:
+			driver: bridge
+
+		services:
+		  nifi:
+			image: apache/nifi
+			container_name: nifi_docker
+			ports:
+			  - "8443:8443/tcp"  # HTTPS port
+			  - "8181:8181/tcp"  # HTTP port
+			  - "2055:2055/udp"  # NetFlow
+			environment:
+			  - SINGLE_USER_CREDENTIALS_USERNAME=admin
+			  - SINGLE_USER_CREDENTIALS_PASSWORD=password12345678 # Must be 12+ chars
+			  - NIFI_WEB_HTTPS_PORT=8443
+			volumes:
+			  - nifi_data:/opt/nifi/nifi-current/data
+			  - nifi_conf:/opt/nifi/nifi-current/conf
+			  - nifi_logs:/opt/nifi/nifi-current/logs
+			  - nifi_state:/opt/nifi/nifi-current/state
+			restart: unless-stopped
+
+		volumes:
+		  nifi_data:
+		  nifi_conf:
+		  nifi_logs:
+		  
+step3: Launching the Cluster
+	- launch cluster
+		PS C:\nifi-docker> docker compose up -d
+		[+] up 13/13
+		[+] up 19/19che/nifi Pulled                                                                                                                          405.3s
+		 ✔ Image apache/nifi                          Pulled                                                                                                 405.3s
+		   ✔ 4f4fb700ef54                             Pull complete                                                                                          399.3s
+		   ✔ 28a8e7bb19f9                             Pull complete                                                                                          399.2s
+		   ✔ 9ae1cc70026a                             Pull complete                                                                                          127.5s
+		   ✔ 7dedccbbd6fa                             Pull complete                                                                                          127.9s
+		   ✔ ed618cf76135                             Pull complete                                                                                            2.3s
+		   ✔ e1b078449b62                             Pull complete                                                                                          128.1s
+		   ✔ 78158ef7e598                             Pull complete                                                                                            1.7s
+		   ✔ e1595a0c82cb                             Pull complete                                                                                           96.1s
+		   ✔ cd01849e3cbd                             Pull complete                                                                                           95.6s
+		   ✔ 44cdeb8b47bb                             Pull complete                                                                                          126.5s
+		   ✔ e7bc1888a401                             Pull complete                                                                                            2.6s
+		   ✔ 69be7988ff8f                             Download complete                                                                                        0.0s
+		 ✔ Network nifi-using-dockercompose_default   Created                                                                                                  0.1s
+		 ✔ Volume nifi-using-dockercompose_nifi_conf  Created                                                                                                  0.0s
+		 ✔ Volume nifi-using-dockercompose_nifi_logs  Created                                                                                                  0.0s
+		 ✔ Volume nifi-using-dockercompose_nifi_state Created                                                                                                  0.0s
+		 ✔ Volume nifi-using-dockercompose_nifi_data  Created                                                                                                  0.0s
+		 ✔ Container nifi_docker                      Created                   
+		 
+	- Verify all containers are running 
+		PS C:\nifi-docker> docker compose ps
+		NAME          IMAGE         COMMAND                 SERVICE   CREATED             STATUS             PORTS
+		nifi_docker   apache/nifi   "../scripts/start.sh"   nifi      About an hour ago   Up About an hour   0.0.0.0:8181->8181/tcp, [::]:8181->8181/tcp, 0.0.0.0:2055->2055/udp, [::]:2055->2055/udp, 0.0.0.0:8443->8443/tcp, [::]:8443->8443/tcp
+
+step4: stop docker
+		PS C:\nifi-docker> docker compose stop
+		[+] stop 1/1
+		 ✔ Container nifi_docker Stopped                                                                                                                       2.3s
+		> docker compose down
+                                                                                                      2.1s
+		 
+		 
+			
+step5: stop and remove docker
+		PS C:\nifi-docker>
+		[+] down 2/2
+		 ✔ Container nifi_docker                    Removed                                                                                                    1.3s
+		 ✔ Network nifi-using-dockercompose_default Removed               
+
+4. Accessing nifi UI
+	To access the Kafka UI, simply navigate to http://localhost:8334 in your browser
+	
+
+

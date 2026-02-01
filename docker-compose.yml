@@ -1,0 +1,32 @@
+#version: '3'
+
+networks:
+  kafka-net:
+    driver: bridge
+
+services:
+  nifi:
+    image: apache/nifi
+    container_name: nifi_docker
+    ports:
+      - "8443:8443/tcp"  # HTTPS port
+      - "8181:8181/tcp"  # HTTP port
+      - "2055:2055/udp"  # NetFlow
+    environment:
+      - SINGLE_USER_CREDENTIALS_USERNAME=admin
+      - SINGLE_USER_CREDENTIALS_PASSWORD=password12345678 # Must be 12+ chars
+      - NIFI_WEB_HTTPS_PORT=8443
+    volumes:
+      - nifi_data:/opt/nifi/nifi-current/data
+      - nifi_conf:/opt/nifi/nifi-current/conf
+      - nifi_logs:/opt/nifi/nifi-current/logs
+      - nifi_state:/opt/nifi/nifi-current/state
+    restart: unless-stopped
+
+volumes:
+  nifi_data:
+  nifi_conf:
+  nifi_logs:
+  nifi_state:
+  
+  
